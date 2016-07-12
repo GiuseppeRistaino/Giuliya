@@ -1,3 +1,32 @@
 <resources>
     <string name="app_name">Giuliya</string>
+
+    <string name="total">Totale</string>
+    <string name="info_spesa">Info spesa</string>
+    <string name="extracted_data">Dati estratti</string>
+    <string name="price">prezzo</string>
+    <string name="edit">edit</string>
+    <string name="Soglia">Soglia notifica: </string>
+    <string name="Budget">Budget: </string>
+    <string name="giornaliera">giornaliera</string>
+    <string name="settimanale">settimanale</string>
+    <string name="mensile">mensile</string>
+    <string name="annuale">annuale</string>
+    <string name="visualizzazione">Visualizzazione</string>
+    <string name="Negozio">Negozio: </string>
+    <string name="Salva">Salva</string>
+    <string name="Annulla">Annulla</string>
+
+    <string name="title_activity_activity_home">BudgMan</string>
+    <string name="title_activity_activity_dati_estratti">Dati estratti</string>
+    <string name="title_activity_activity_info_spesa">Info spesa</string>
+    <string name="title_activity_shared_pref">Impostazioni</string>
+
+    <string name="preferenze">Preferenze</string>
+    <string name="shared_pref_file_name">budgman.preferenze</string>
+    <string name="shared_pref_budget">budget</string>
+    <string name="shared_pref_soglia">soglia</string>
+
+    <string name="toast_notification_budget">budget non è stato inserito</string>
+
 </resources>
