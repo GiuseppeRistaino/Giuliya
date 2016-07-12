@@ -17,13 +17,13 @@
     <string name="Salva">Salva</string>
     <string name="Annulla">Annulla</string>
 
-    <string name="title_activity_activity_home">BudgMan</string>
+    <string name="title_activity_activity_home">Giuliya</string>
     <string name="title_activity_activity_dati_estratti">Dati estratti</string>
     <string name="title_activity_activity_info_spesa">Info spesa</string>
     <string name="title_activity_shared_pref">Impostazioni</string>
 
     <string name="preferenze">Preferenze</string>
-    <string name="shared_pref_file_name">budgman.preferenze</string>
+    <string name="shared_pref_file_name">giuliya.preferenze</string>
     <string name="shared_pref_budget">budget</string>
     <string name="shared_pref_soglia">soglia</string>
 
