@@ -62,13 +62,6 @@ public class Preferenze extends Activity {
         editor.putString(getString(R.string.shared_pref_budget), etb.getText().toString());
         editor.putString(getString(R.string.shared_pref_soglia), ets.getText().toString());
 
-        if(Float.parseFloat(etb.getText().toString())==0){
-            makeText(this, getString(R.string.toast_notification_budget), Toast.LENGTH_SHORT).show();
-        }
-        else {
-            editor.commit();
-            this.finish();
-        }
     }
     public void annulla(View view){
         this.finish();
