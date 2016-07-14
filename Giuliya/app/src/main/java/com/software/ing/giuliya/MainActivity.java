@@ -7,10 +7,15 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Environment;
+import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -23,15 +28,25 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.util.EntityUtils;
 
+import java.io.File;
+
 public class MainActivity extends AppCompatActivity {
 
     EditText etResponse;
     TextView tvIsConnected;
+    Button buttonFoto;
+
+    protected String _path;
+
+    public static final String DATA_PATH = Environment
+            .getExternalStorageDirectory().toString() + "/Giuliya/";
+    private static final String TAG = "MainActivity.java";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        SharedPreferences settings=getSharedPreferences(getString(R.string.shared_pref_file_name), Context.MODE_PRIVATE);
+        SharedPreferences settings = getSharedPreferences(getString(R.string.shared_pref_file_name), Context.MODE_PRIVATE);
 
         // get reference to the views
         etResponse = (EditText) findViewById(R.id.etResponse);
@@ -45,6 +60,37 @@ public class MainActivity extends AppCompatActivity {
         else{
             tvIsConnected.setText("You are NOT conncted");
         }
+
+        //Inizializzazione del bottone per la fotocamera
+        buttonFoto = (Button) findViewById(R.id.button_Foto);
+        //Apertura della fotocamera
+        buttonFoto.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startCameraActivity();
+            }
+        });
+
+        //Inizializzazione di path utilizzati per l'immagazzinamento die dati
+        String[] paths = new String[] { DATA_PATH, DATA_PATH + "data/" };
+
+        //Verifica della creazione dei path
+        for (String path : paths) {
+            File dir = new File(path);
+            if (!dir.exists()) {
+                if (!dir.mkdirs()) {
+                    Log.v(TAG, "ERROR: Creation of directory " + path + " on sdcard failed");
+                    Toast.makeText(this, "ERROR: Creation of directory" + path + " on sdcard failed", Toast.LENGTH_LONG);
+                    return;
+                } else {
+                    Log.v(TAG, "Created directory " + path + " on sdcard");
+                    Toast.makeText(this, "Created directory " + path + " on sdcard", Toast.LENGTH_LONG);
+                }
+            }
+        }
+
+        //Percorso dove si trova l'immagine da utilizzare per l'OCR
+        _path = DATA_PATH + "/ocr.jpg";
 
         // call AsynTask to perform network operation on separate thread
         new HttpAsyncTask().execute("http://hmkcode.com/examples/index.php");
@@ -74,6 +120,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    //Metodo per richiedere servizio OCR di Microsoft
     public static String GetOCR()
     {
         HttpClient httpclient = new DefaultHttpClient();
@@ -132,5 +179,16 @@ public class MainActivity extends AppCompatActivity {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main_menu, menu);
         return true;
+    }
+
+    //Metodo per l'attivazione della telecamera
+    protected void startCameraActivity() {
+        File file = new File(_path);
+        Uri outputFileUri = Uri.fromFile(file);
+
+        final Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        intent.putExtra(MediaStore.EXTRA_OUTPUT, outputFileUri);
+
+        startActivityForResult(intent, 0);
     }
 }
