@@ -24,11 +24,12 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.StringEntity;
+import org.apache.http.entity.InputStreamEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.util.EntityUtils;
 
 import java.io.File;
+import java.io.FileInputStream;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -48,19 +49,10 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         SharedPreferences settings = getSharedPreferences(getString(R.string.shared_pref_file_name), Context.MODE_PRIVATE);
 
-        // get reference to the views
+        // Inizializzazione EditText per testare la risposta del server
         etResponse = (EditText) findViewById(R.id.etResponse);
+        //Inizializzazione TextView per visualizzare il controllo della connessione
         tvIsConnected = (TextView) findViewById(R.id.tvIsConnected);
-
-        // check if you are connected or not
-        if(isConnected()){
-            tvIsConnected.setBackgroundColor(0xFF00CC00);
-            tvIsConnected.setText("You are conncted");
-        }
-        else{
-            tvIsConnected.setText("You are NOT conncted");
-        }
-
         //Inizializzazione del bottone per la fotocamera
         buttonFoto = (Button) findViewById(R.id.button_Foto);
         //Apertura della fotocamera
@@ -71,6 +63,16 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        // Controllo per vedere se si è connessi ad internet oppure no
+        if(isConnected()){
+            tvIsConnected.setBackgroundColor(0xFF00CC00);
+            tvIsConnected.setText("You are conncted");
+        }
+        else{
+            tvIsConnected.setText("You are NOT conncted");
+        }
+
+
         //Inizializzazione di path utilizzati per l'immagazzinamento die dati
         String[] paths = new String[] { DATA_PATH, DATA_PATH + "data/" };
 
@@ -80,11 +82,9 @@ public class MainActivity extends AppCompatActivity {
             if (!dir.exists()) {
                 if (!dir.mkdirs()) {
                     Log.v(TAG, "ERROR: Creation of directory " + path + " on sdcard failed");
-                    Toast.makeText(this, "ERROR: Creation of directory" + path + " on sdcard failed", Toast.LENGTH_LONG);
                     return;
                 } else {
                     Log.v(TAG, "Created directory " + path + " on sdcard");
-                    Toast.makeText(this, "Created directory " + path + " on sdcard", Toast.LENGTH_LONG);
                 }
             }
         }
@@ -92,8 +92,6 @@ public class MainActivity extends AppCompatActivity {
         //Percorso dove si trova l'immagine da utilizzare per l'OCR
         _path = DATA_PATH + "/ocr.jpg";
 
-        // call AsynTask to perform network operation on separate thread
-        new HttpAsyncTask().execute("http://hmkcode.com/examples/index.php");
     }
 
     // check network connection
@@ -106,11 +104,15 @@ public class MainActivity extends AppCompatActivity {
             return false;
     }
 
+    //Task per la comunicazione con il server di Microsoft per l'OCR
     private class HttpAsyncTask extends AsyncTask<String, Void, String> {
         @Override
         protected String doInBackground(String... urls) {
-
-            return GetOCR();
+            File file = new File(_path);
+            if (file.exists())
+                return GetOCR();
+            else
+                return "file don't exist";
         }
         // onPostExecute displays the results of the AsyncTask.
         @Override
@@ -120,9 +122,10 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    //Metodo per richiedere servizio OCR di Microsoft
-    public static String GetOCR()
+    //Metodo per la richiesta di OCR dal server
+    public String GetOCR()
     {
+
         HttpClient httpclient = new DefaultHttpClient();
         String result = "";
 
@@ -138,27 +141,25 @@ public class MainActivity extends AppCompatActivity {
                     .appendQueryParameter("detectOrientation", "true");
 
             HttpPost request = new HttpPost(builder.build().toString());
-            request.setHeader("Content-Type", "application/json");
+            request.setHeader("Content-Type", "application/octet-stream");
             request.setHeader("Ocp-Apim-Subscription-Key", "56324626a88748adab5e777feb795aae");
 
+            File file = new File(_path);
+            InputStreamEntity reqEntity = new InputStreamEntity(
+                    new FileInputStream(file), -1);
 
-            // Request body
-            StringEntity reqEntity = new StringEntity("{\"url\":\"http://scrineum.unipv.it/rivista/nicolaj/scontrino.jpg\"}");
             request.setEntity(reqEntity);
 
             HttpResponse response = httpclient.execute(request);
             HttpEntity entity = response.getEntity();
 
-            if (entity != null)
-            {
+            if (entity != null) {
                 result = EntityUtils.toString(entity);
             }
-
-
         }
         catch (Exception e)
         {
-            result = e.getMessage();
+            result = "Errore";
         }
         return result;
     }
@@ -186,9 +187,26 @@ public class MainActivity extends AppCompatActivity {
         File file = new File(_path);
         Uri outputFileUri = Uri.fromFile(file);
 
+        //Creazione della cartella per la
         final Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         intent.putExtra(MediaStore.EXTRA_OUTPUT, outputFileUri);
 
         startActivityForResult(intent, 0);
+    }
+
+    @Override
+    protected void onActivityResult ( int requestCode, int resultCode, Intent data ) {
+
+        if ( requestCode == 0 ) {
+
+            if ( resultCode == RESULT_CANCELED ) {
+                //Gestisci che l'utente non ha scattato la foto
+            }
+            else {
+                //Parte il thread che manda la foto al server
+                new HttpAsyncTask().execute();
+            }
+        }
+        super.onActivityResult( requestCode, resultCode, data );
     }
 }
