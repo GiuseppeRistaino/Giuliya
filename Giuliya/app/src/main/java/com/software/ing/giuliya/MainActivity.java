@@ -125,8 +125,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(String result) {
             String totalWord = "";
-            String boundingBox = "";
-            HashMap<Integer, String> wordsMap = new HashMap<Integer, String>();
+            HashMap<String, String> wordsMap = new HashMap<String, String>();
 
             //Tentativo di lavoro con JSON
             try {
@@ -142,19 +141,30 @@ public class MainActivity extends AppCompatActivity {
                                 //Nell'array che si viene a formare la seconda posizione è occupata dall'ordinata del boundingBox, la prima posizione è l'ascissa, le restanti sono l'altezza e la larghezza
                                 String wordBox = words.getJSONObject(z).getString("boundingBox");
                                 String segments[] = wordBox.split(",");
-                                Integer yWordBox = Integer.parseInt(segments[1]);
-                                wordsMap.put(yWordBox, words.getJSONObject(z).getString("text"));
+                                wordsMap.put(segments[1], words.getJSONObject(z).getString("text"));
                             }
                         }
                 }
                 //Qui si ricavano le parole dall'HashMap
                 Set wordsSet = wordsMap.entrySet();
                 Iterator iterator = wordsSet.iterator();
+
                 while(iterator.hasNext()) {
                     Map.Entry mentry = (Map.Entry)iterator.next();
-                    String box = mentry.getKey().toString();
-
-                    totalWord += "key is: "+ mentry.getKey() + " & Value is: " +mentry.getValue() +"\n";
+                    int ybox = Integer.parseInt(mentry.getKey().toString());
+                    Iterator iteratorKey = wordsSet.iterator();
+                    totalWord += mentry.getValue().toString();
+                    while (iteratorKey.hasNext()) {
+                        Map.Entry key = (Map.Entry)iteratorKey.next();
+                        if (isOnSameLine(ybox, Integer.parseInt(key.getKey().toString())) && !key.getValue().equals(mentry.getValue())) {
+                            /*totalWord += "key is: "+ mentry.getKey() + " & Value is: " +mentry.getValue() +
+                                    "key other is: "+ key.getKey() + " & Value other is: " +key.getValue() +"\n";*/
+                            totalWord +=  " ----- " +key.getValue().toString();
+                            //wordsSet.remove(key.getKey());
+                        }
+                    }
+                    totalWord += "\n";
+                    //totalWord += "key is: "+ mentry.getKey() + " & Value is: " +mentry.getValue() +"\n";
                 }
             } catch (JSONException e) {
                 result = "Formato JSON non valido";
@@ -256,9 +266,9 @@ public class MainActivity extends AppCompatActivity {
     //Metodo per verificare se due parole sono sulla stessa riga
     public boolean isOnSameLine (int y1, int y2) {
         boolean isSame = false;
-
-        if (y1-5 <= y2 && y2 <= y1+5) isSame = true;
-
+        if (y1-10 <= y2 && y2 <= y1+10) isSame = true;
         return isSame;
     }
+
+
 }
