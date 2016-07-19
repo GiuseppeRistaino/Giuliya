@@ -27,9 +27,19 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.InputStreamEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.util.EntityUtils;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.Map;
+import java.util.Set;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -38,6 +48,8 @@ public class MainActivity extends AppCompatActivity {
     Button buttonFoto;
 
     protected String _path;
+
+    HashMap<String, ArrayList<String>> wordsMapTest = new HashMap<String, ArrayList<String>>();
 
     public static final String DATA_PATH = Environment
             .getExternalStorageDirectory().toString() + "/Giuliya/";
@@ -118,7 +130,12 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(String result) {
             Toast.makeText(getBaseContext(), "Received!", Toast.LENGTH_LONG).show();
-            etResponse.setText(result);
+
+            //HashMap<String, String> wordsMap = new HashMap<>();
+            //wordsMap = getWordsMap(result);
+            getWordsMap(result);
+            etResponse.setText(stampaLinea());
+            //etResponse.setText(wordsOnSameLine(wordsMap));
         }
     }
 
@@ -195,10 +212,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onActivityResult ( int requestCode, int resultCode, Intent data ) {
-
+    protected void onActivityResult (int requestCode, int resultCode, Intent data) {
         if ( requestCode == 0 ) {
-
             if ( resultCode == RESULT_CANCELED ) {
                 //Gestisci che l'utente non ha scattato la foto
             }
@@ -207,6 +222,111 @@ public class MainActivity extends AppCompatActivity {
                 new HttpAsyncTask().execute();
             }
         }
-        super.onActivityResult( requestCode, resultCode, data );
+        super.onActivityResult(requestCode, resultCode, data);
     }
+
+
+    //Metodo per verificare se due parole sono sulla stessa riga
+    public boolean isOnSameLine (int y1, int y2) {
+        boolean isSame = false;
+        if (y1-15 <= y2 && y2 <= y1+15) isSame = true;
+        return isSame;
+    }
+
+
+    //restituisce l'hashMap che contiene tutte le parole che sono contentute nel file JSON creato dall'OCR
+    private HashMap<String, String> getWordsMap(String result) {
+        HashMap<String, String> wordsMap = new HashMap<String, String>();
+        try {
+            JSONObject obj = new JSONObject(result);
+            JSONArray regions = obj.getJSONArray("regions");
+            for (int i = 0; i < regions.length(); i++) {
+                JSONArray lines = regions.getJSONObject(i).getJSONArray("lines");
+                for (int j = 0; j < lines.length(); j++) {
+                    JSONArray words = lines.getJSONObject(j).getJSONArray("words");
+                    for (int z = 0; z < words.length(); z++) {
+                        //Nell'hashMap la chiave è l'ordinata del rettangolo che contiene la stringa del valore a cui si riferisce
+                        //La chiave è presa partizionando la stringa del boundingBox ogni volta che si incontra una "," (virgola)
+                        //Nell'array che si viene a formare la seconda posizione è occupata dall'ordinata del boundingBox, la prima posizione è l'ascissa, le restanti sono l'altezza e la larghezza
+                        String wordBox = words.getJSONObject(z).getString("boundingBox");
+                        String segments[] = wordBox.split(",");
+                        //wordsMap.put(segments[1], words.getJSONObject(z).getString("text"));
+
+                        Set key = wordsMapTest.entrySet();
+                        Iterator iter= key.iterator();
+                        boolean aggiunto = false;
+                        String parola = words.getJSONObject(z).getString("text");
+                        while (iter.hasNext()) {
+                            Map.Entry mentry = (Map.Entry)iter.next();
+                            Log.d("MAP:ENTRY", mentry.getKey().toString());
+                            int y1 = Integer.parseInt(mentry.getKey().toString());
+                            int y2 = Integer.parseInt(segments[1]);
+                            if (isOnSameLine(y1, y2)) {
+                                ArrayList<String> wordsList = wordsMapTest.get(mentry.getKey().toString());
+                                Log.d("PAROLA", wordsList.get(0));
+                                wordsList.add(parola);
+                                aggiunto = true;
+                                break;
+                            }
+                        }
+                        if (!aggiunto) {
+                            ArrayList<String> linea = new ArrayList<>();
+                            wordsMapTest.put(segments[1], linea);
+                            linea.add(parola);
+                        }
+
+                    }
+                }
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return wordsMap;
+    }
+
+    public String stampaLinea() {
+        Set set = wordsMapTest.entrySet();
+        Iterator i = set.iterator();
+        String totalWords = "";
+        while (i.hasNext()) {
+            Map.Entry mentry = (Map.Entry)i.next();
+            ArrayList<String> lines = wordsMapTest.get(mentry.getKey());
+
+            for (String s : lines) {
+                totalWords += "---" +s;
+            }
+            totalWords += "\n";
+        }
+        return  totalWords;
+    }
+
+/*
+    private String wordsOnSameLine(HashMap<String, String> wordsMap) {
+        String totalWords = "";
+        Set wordsSet = wordsMap.entrySet();
+        Iterator iterator = wordsSet.iterator();
+        Iterator iteratorKey;
+
+        while(iterator.hasNext()) {
+            Map.Entry mentry = (Map.Entry)iterator.next();
+            int ybox = Integer.parseInt(mentry.getKey().toString());
+            iteratorKey = wordsSet.iterator();
+            totalWords += mentry.getValue().toString();
+            while (iteratorKey.hasNext()) {
+                Map.Entry key = (Map.Entry)iteratorKey.next();
+                if (isOnSameLine(ybox, Integer.parseInt(key.getKey().toString())) && !key.getValue().equals(mentry.getValue())) {
+                            //totalWord += "key is: "+ mentry.getKey() + " & Value is: " +mentry.getValue() +
+                              //      "key other is: "+ key.getKey() + " & Value other is: " +key.getValue() +"\n";
+                    totalWords +=  " ----- " +key.getValue().toString();
+                    wordsSet.remove(key.getValue());
+
+                }
+            }
+            totalWords += "\n";
+            //totalWord += "key is: "+ mentry.getKey() + " & Value is: " +mentry.getValue() +"\n";
+        }
+        return totalWords;
+    }
+    */
+
 }
