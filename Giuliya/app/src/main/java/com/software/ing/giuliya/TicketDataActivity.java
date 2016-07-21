@@ -39,6 +39,7 @@ public class TicketDataActivity extends AppCompatActivity {
         editText.setText(stampaLinea());
 
         textViewTotaleEuro = (TextView) findViewById(R.id.textView_totale_euro);
+        textViewTotaleEuro.setText(getTotale());
     }
 
 
@@ -58,12 +59,11 @@ public class TicketDataActivity extends AppCompatActivity {
                         //Nell'array che si viene a formare la seconda posizione è occupata dall'ordinata del boundingBox, la prima posizione è l'ascissa, le restanti sono l'altezza e la larghezza
                         String wordBox = words.getJSONObject(z).getString("boundingBox");
                         String segments[] = wordBox.split(",");
-                        //wordsMap.put(segments[1], words.getJSONObject(z).getString("text"));
 
                         Set key = wordsMapTest.entrySet();
                         Iterator iter= key.iterator();
                         boolean aggiunto = false;
-                        String parola = words.getJSONObject(z).getString("text");
+                        String parola = words.getJSONObject(z).getString("text") +"-"+segments[0];
                         while (iter.hasNext()) {
                             Map.Entry mentry = (Map.Entry)iter.next();
                             Log.d("MAP:ENTRY", mentry.getKey().toString());
@@ -111,7 +111,7 @@ public class TicketDataActivity extends AppCompatActivity {
     //Metodo per verificare se due parole sono sulla stessa riga
     public boolean isOnSameLine (int y1, int y2) {
         boolean isSame = false;
-        if (y1-30 <= y2 && y2 <= y1+30) isSame = true;
+        if (y1-35 <= y2 && y2 <= y1+35) isSame = true;
         return isSame;
     }
 
@@ -127,14 +127,29 @@ public class TicketDataActivity extends AppCompatActivity {
                 if (s.equalsIgnoreCase("TOTALE")) {
                     //PRENDITI SOLO IL NUMERO
                     //Prendi la parola che stà più a destra
-                    
+                    totale = getWordToRight(wordsList);
                 }
             }
 
         }
-
-
         return totale;
     }
+
+
+    public String getWordToRight(ArrayList<String> words) {
+        String wordToRight = "";
+        for (String s1 : words) {
+            String[] segments1 = s1.split("-");
+            int x1 = Integer.parseInt(segments1[1]);
+            for (String s2 : words) {
+                String[] segments2 = s2.split("-");
+                int x2 = Integer.parseInt(segments2[1]);
+                if (x2 > x1) wordToRight = segments2[0];
+                else wordToRight = segments1[0];
+            }
+        }
+        return wordToRight;
+    }
+
 
 }
