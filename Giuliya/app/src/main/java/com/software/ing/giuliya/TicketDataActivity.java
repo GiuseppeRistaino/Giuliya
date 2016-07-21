@@ -66,12 +66,10 @@ public class TicketDataActivity extends AppCompatActivity {
                         String parola = words.getJSONObject(z).getString("text") +"-"+segments[0];
                         while (iter.hasNext()) {
                             Map.Entry mentry = (Map.Entry)iter.next();
-                            Log.d("MAP:ENTRY", mentry.getKey().toString());
                             int y1 = Integer.parseInt(mentry.getKey().toString());
                             int y2 = Integer.parseInt(segments[1]);
                             if (isOnSameLine(y1, y2)) {
                                 ArrayList<String> wordsList = wordsMapTest.get(mentry.getKey().toString());
-                                Log.d("PAROLA", wordsList.get(0));
                                 wordsList.add(parola);
                                 aggiunto = true;
                                 break;
@@ -123,8 +121,9 @@ public class TicketDataActivity extends AppCompatActivity {
         while (iter.hasNext()) {
             Map.Entry mentry = (Map.Entry)iter.next();
             ArrayList<String> wordsList = wordsMapTest.get(mentry.getKey().toString());
+            Log.d("HASH", String.valueOf(wordsList.size()));
             for (String s : wordsList) {
-                if (s.equalsIgnoreCase("TOTALE")) {
+                if (s.contains("TOTALE")) {
                     //PRENDITI SOLO IL NUMERO
                     //Prendi la parola che stà più a destra
                     totale = getWordToRight(wordsList);
@@ -139,13 +138,14 @@ public class TicketDataActivity extends AppCompatActivity {
     public String getWordToRight(ArrayList<String> words) {
         String wordToRight = "";
         for (String s1 : words) {
+            Log.d("LEFT", s1);
             String[] segments1 = s1.split("-");
             int x1 = Integer.parseInt(segments1[1]);
             for (String s2 : words) {
                 String[] segments2 = s2.split("-");
+                Log.d("RIGHT", s2);
                 int x2 = Integer.parseInt(segments2[1]);
                 if (x2 > x1) wordToRight = segments2[0];
-                else wordToRight = segments1[0];
             }
         }
         return wordToRight;
