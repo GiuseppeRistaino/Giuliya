@@ -7,16 +7,15 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -33,22 +32,23 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
 
 public class MainActivity extends AppCompatActivity {
 
-    EditText etResponse;
+    //EditText etResponse;
     TextView tvIsConnected;
     Button buttonFoto;
 
+    public static final String OCR_RESULT_KEY = "OCR_RESULT";
+
     protected String _path;
 
+    //HashMap che contiene l'ordinata delle parole che sono sulla stessa riga (Key) e un array che contiene le parole che sono sulla stessa riga (value)
     HashMap<String, ArrayList<String>> wordsMapTest = new HashMap<String, ArrayList<String>>();
 
     public static final String DATA_PATH = Environment
@@ -62,7 +62,7 @@ public class MainActivity extends AppCompatActivity {
         SharedPreferences settings = getSharedPreferences(getString(R.string.shared_pref_file_name), Context.MODE_PRIVATE);
 
         // Inizializzazione EditText per testare la risposta del server
-        etResponse = (EditText) findViewById(R.id.etResponse);
+        //etResponse = (EditText) findViewById(R.id.etResponse);
         //Inizializzazione TextView per visualizzare il controllo della connessione
         tvIsConnected = (TextView) findViewById(R.id.tvIsConnected);
         //Inizializzazione del bottone per la fotocamera
@@ -133,9 +133,12 @@ public class MainActivity extends AppCompatActivity {
 
             //HashMap<String, String> wordsMap = new HashMap<>();
             //wordsMap = getWordsMap(result);
-            getWordsMap(result);
-            etResponse.setText(stampaLinea());
+            //getWordsMap(result);
+            //etResponse.setText(stampaLinea());
             //etResponse.setText(wordsOnSameLine(wordsMap));
+            Intent intent = new Intent(MainActivity.this, TicketDataActivity.class);
+            intent.putExtra(OCR_RESULT_KEY, result);
+            startActivity(intent);
         }
     }
 
@@ -300,33 +303,5 @@ public class MainActivity extends AppCompatActivity {
         return  totalWords;
     }
 
-/*
-    private String wordsOnSameLine(HashMap<String, String> wordsMap) {
-        String totalWords = "";
-        Set wordsSet = wordsMap.entrySet();
-        Iterator iterator = wordsSet.iterator();
-        Iterator iteratorKey;
-
-        while(iterator.hasNext()) {
-            Map.Entry mentry = (Map.Entry)iterator.next();
-            int ybox = Integer.parseInt(mentry.getKey().toString());
-            iteratorKey = wordsSet.iterator();
-            totalWords += mentry.getValue().toString();
-            while (iteratorKey.hasNext()) {
-                Map.Entry key = (Map.Entry)iteratorKey.next();
-                if (isOnSameLine(ybox, Integer.parseInt(key.getKey().toString())) && !key.getValue().equals(mentry.getValue())) {
-                            //totalWord += "key is: "+ mentry.getKey() + " & Value is: " +mentry.getValue() +
-                              //      "key other is: "+ key.getKey() + " & Value other is: " +key.getValue() +"\n";
-                    totalWords +=  " ----- " +key.getValue().toString();
-                    wordsSet.remove(key.getValue());
-
-                }
-            }
-            totalWords += "\n";
-            //totalWord += "key is: "+ mentry.getKey() + " & Value is: " +mentry.getValue() +"\n";
-        }
-        return totalWords;
-    }
-    */
 
 }

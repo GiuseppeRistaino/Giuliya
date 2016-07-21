@@ -15,16 +15,7 @@
         android:layout_marginBottom="5dp"
         android:text="is connected? " />
 
-    <EditText
-        android:id="@+id/etResponse"
-        android:layout_width="match_parent"
-        android:layout_height="200dp"
-        android:ems="10"
-        android:layout_marginTop="10dp"
-        android:inputType="textMultiLine" >
 
-        <requestFocus />
-    </EditText>
 
     <Button
         android:layout_width="wrap_content"
