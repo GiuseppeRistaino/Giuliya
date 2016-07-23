@@ -1,6 +1,8 @@
 package com.software.ing.giuliya;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
@@ -19,6 +21,9 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.software.ing.database.DBTicketManager;
+import com.software.ing.util.Parola;
+
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -34,15 +39,14 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
 
 public class MainActivity extends AppCompatActivity {
 
     //EditText etResponse;
     TextView tvIsConnected;
     Button buttonFoto;
+
+    DBTicketManager dbTicketManager;
 
     public static final String OCR_RESULT_KEY = "OCR_RESULT";
 
@@ -60,7 +64,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         SharedPreferences settings = getSharedPreferences(getString(R.string.shared_pref_file_name), Context.MODE_PRIVATE);
-
+        dbTicketManager = new DBTicketManager(this);
         // Inizializzazione EditText per testare la risposta del server
         //etResponse = (EditText) findViewById(R.id.etResponse);
         //Inizializzazione TextView per visualizzare il controllo della connessione
@@ -130,15 +134,42 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(String result) {
             Toast.makeText(getBaseContext(), "Received!", Toast.LENGTH_LONG).show();
+            //String totale = "Non trovato";
+            dbTicketManager.deleteAll();
+            riempiDB(result);
+            Parola totale = dbTicketManager.trova("TOTALE");
+            if (totale != null) {
+                ArrayList<Parola> paroleInLinea = new ArrayList<>();
+                ArrayList<Parola> paroleInColonna = new ArrayList<>();
+                paroleInLinea = dbTicketManager.trovaParoleInLinea(totale.getY());
+                Parola totaleEuro = getParolaDestra(paroleInLinea);
+                if (totaleEuro != null) {
+                    paroleInColonna = dbTicketManager.trovaParoleInColonna(totaleEuro.getX());
+                    paroleInColonna = getEuroProdotti(paroleInColonna);
+                    String prodotto = "";
+                    for (Parola p : paroleInColonna) {
+                        paroleInLinea = dbTicketManager.trovaParoleInLinea(p.getY());
+                        for (Parola par : paroleInLinea) {
+                            prodotto += par.getParola() + " ";
+                        }
+                        prodotto += "\n";
+                    }
+                    Intent intent = new Intent(MainActivity.this, TicketDataActivity.class);
+                    intent.putExtra(OCR_RESULT_KEY, prodotto);
+                    startActivity(intent);
+                }
+            }
+            AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this).create();
+            alertDialog.setTitle("Dati non trovati");
+            alertDialog.setMessage("Si prega di scattare nuovamente la foto, oppure inserire manualmente i dati dello scontrino.");
+            alertDialog.setButton("OK", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int which) {
+                    startCameraActivity();
+                }
+            });
+            alertDialog.show();
 
-            //HashMap<String, String> wordsMap = new HashMap<>();
-            //wordsMap = getWordsMap(result);
-            //getWordsMap(result);
-            //etResponse.setText(stampaLinea());
-            //etResponse.setText(wordsOnSameLine(wordsMap));
-            Intent intent = new Intent(MainActivity.this, TicketDataActivity.class);
-            intent.putExtra(OCR_RESULT_KEY, result);
-            startActivity(intent);
+
         }
     }
 
@@ -229,79 +260,54 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    //Metodo per verificare se due parole sono sulla stessa riga
-    public boolean isOnSameLine (int y1, int y2) {
-        boolean isSame = false;
-        if (y1-15 <= y2 && y2 <= y1+15) isSame = true;
-        return isSame;
-    }
 
 
-    //restituisce l'hashMap che contiene tutte le parole che sono contentute nel file JSON creato dall'OCR
-    private HashMap<String, String> getWordsMap(String result) {
-        HashMap<String, String> wordsMap = new HashMap<String, String>();
+    private void riempiDB(String jsonFormat) {
         try {
-            JSONObject obj = new JSONObject(result);
-            JSONArray regions = obj.getJSONArray("regions");
+            JSONObject jsonObject = new JSONObject(jsonFormat);
+            JSONArray regions = jsonObject.getJSONArray("regions");
             for (int i = 0; i < regions.length(); i++) {
                 JSONArray lines = regions.getJSONObject(i).getJSONArray("lines");
                 for (int j = 0; j < lines.length(); j++) {
                     JSONArray words = lines.getJSONObject(j).getJSONArray("words");
                     for (int z = 0; z < words.length(); z++) {
-                        //Nell'hashMap la chiave è l'ordinata del rettangolo che contiene la stringa del valore a cui si riferisce
-                        //La chiave è presa partizionando la stringa del boundingBox ogni volta che si incontra una "," (virgola)
-                        //Nell'array che si viene a formare la seconda posizione è occupata dall'ordinata del boundingBox, la prima posizione è l'ascissa, le restanti sono l'altezza e la larghezza
-                        String wordBox = words.getJSONObject(z).getString("boundingBox");
-                        String segments[] = wordBox.split(",");
-                        //wordsMap.put(segments[1], words.getJSONObject(z).getString("text"));
-
-                        Set key = wordsMapTest.entrySet();
-                        Iterator iter= key.iterator();
-                        boolean aggiunto = false;
-                        String parola = words.getJSONObject(z).getString("text");
-                        while (iter.hasNext()) {
-                            Map.Entry mentry = (Map.Entry)iter.next();
-                            Log.d("MAP:ENTRY", mentry.getKey().toString());
-                            int y1 = Integer.parseInt(mentry.getKey().toString());
-                            int y2 = Integer.parseInt(segments[1]);
-                            if (isOnSameLine(y1, y2)) {
-                                ArrayList<String> wordsList = wordsMapTest.get(mentry.getKey().toString());
-                                Log.d("PAROLA", wordsList.get(0));
-                                wordsList.add(parola);
-                                aggiunto = true;
-                                break;
-                            }
-                        }
-                        if (!aggiunto) {
-                            ArrayList<String> linea = new ArrayList<>();
-                            wordsMapTest.put(segments[1], linea);
-                            linea.add(parola);
-                        }
-
+                        String word = words.getJSONObject(z).getString("text");
+                        String boundingBox = words.getJSONObject(z).getString("boundingBox");
+                        String[] box = boundingBox.split(",");
+                        int boxX = Integer.parseInt(box[0]);
+                        int boxY = Integer.parseInt(box[1]);
+                        int boxW = Integer.parseInt(box[2]);
+                        int boxH = Integer.parseInt(box[3]);
+                        Parola p = new Parola(word, boxX, boxY, boxW, boxH);
+                        dbTicketManager.addParola(p);
                     }
                 }
             }
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        return wordsMap;
     }
 
-    public String stampaLinea() {
-        Set set = wordsMapTest.entrySet();
-        Iterator i = set.iterator();
-        String totalWords = "";
-        while (i.hasNext()) {
-            Map.Entry mentry = (Map.Entry)i.next();
-            ArrayList<String> lines = wordsMapTest.get(mentry.getKey());
-
-            for (String s : lines) {
-                totalWords += "---" +s;
+    public Parola getParolaDestra(ArrayList<Parola> parole) {
+        Parola pDestra = null;
+        int x = 0;
+        for (Parola p : parole) {
+            if (x < p.getX()) {
+                x = p.getX();
+                pDestra = p;
             }
-            totalWords += "\n";
         }
-        return  totalWords;
+        return pDestra;
     }
 
+    public ArrayList<Parola> getEuroProdotti(ArrayList<Parola> parole) {
+        ArrayList<Parola> prodotti = new ArrayList<>();
+        for (Parola p : parole) {
+            if (p.getParola().contains(",") || p.getParola().contains(".")) {
+                prodotti.add(p);
+            }
+        }
+        return prodotti;
+    }
 
 }
