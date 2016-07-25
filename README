@@ -1,0 +1,17 @@
+Si vuole progettare una applicazione mobile di ausilio nella gestione delle proprie spese.
+
+Il sistema deve avere come funzionalità principale quella della lettura degli scontrini fiscali, biglietti di vario genere, per la futura eleborazione delle informazioni acquisite. L'utente deve fare una foto dello fattura fiscale o del biglietto che contiene le informazioni relative alle spese sostenute. L'applicazione, con l'ausilio delle tecniche del riconoscimento dei caratteri, leggerà la foto per estrarre (se presenti) le seguenti informazioni:
+
+il luogo del punto di emissione dello fattura fiscale/biglietto;
+il totale della spesa sostenuta;
+la data;
+i prodotti acquistati con i relativi prezzi;
+altre informazioni presenti sul documento fiscale.
+
+L'utente deve essere in grado di visualizzare con le varie rappresentazioni (lista, grafici) le informazioni relative ai dati raccolti.
+
+L'applicazione deve prevedere inoltre la possibilità dell'inseremento manuale dei dati.
+
+
+link alla documentazione https://www.overleaf.com/read/gscykdcnbtdc
+(work in progress)
