@@ -1,4 +1,4 @@
-before_script: cd Giuliya
+before_install: cd Giuliya
 language: android
 sudo: false
 env:
