@@ -1,34 +1,99 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical" >
+    android:orientation="vertical"
+    android:weightSum="1"
+    android:background="#cc6ae770">
+
+
+    <ImageView
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:scaleType="fitXY"
+        android:id="@+id/imageView"
+        android:src="@drawable/backgraund"/>
+
+    <ImageButton
+        android:layout_marginTop="30dp"
+        android:layout_marginLeft="30dp"
+        android:layout_width="130dp"
+        android:layout_height="130dp"
+        android:scaleType="fitXY"
+        android:background="@null"
+        android:cropToPadding="false"
+        android:id="@+id/button_Foto"
+        android:src="@drawable/fotocamera"
+        android:onClick="insert"/>
+
+    <ImageButton
+
+        android:layout_width="130dp"
+        android:layout_height="130dp"
+        android:layout_marginRight="30dp"
+        android:scaleType="fitXY"
+        android:background="@null"
+        android:cropToPadding="false"
+        android:id="@+id/button_Scontrini"
+        android:src="@drawable/visualizza"
+        android:onClick="insert"
+        android:layout_alignTop="@+id/button_Foto"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true" />
 
     <TextView
-        android:id="@+id/tvIsConnected"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:background="#FF0000"
-        android:textColor="#FFF"
-        android:textSize="18dp"
-        android:layout_marginBottom="5dp"
-        android:text="is connected? " />
+        android:layout_marginBottom="80dp"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="Totale:"
+        android:id="@+id/totale"
+        android:textSize="@dimen/text_size"
+        android:layout_alignParentBottom="true"
+        android:layout_alignLeft="@+id/button_Foto"
+        android:layout_alignStart="@+id/button_Foto"
+        android:textColor="@color/colorText"
+        android:textStyle="bold"/>
 
-
-
-    <Button
+    <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Fotocamera"
-        android:id="@+id/button_Foto"
-        android:layout_gravity="center_horizontal" />
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="value"
+        android:textSize="@dimen/text_size"
+        android:id="@+id/val_totale"
+        android:layout_alignTop="@+id/totale"
+        android:layout_alignRight="@+id/button_Scontrini"
+        android:textColor="@color/colorText"
+        android:textStyle="bold"/>
 
-    <Button
+    <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Scontrini"
-        android:id="@+id/button_Scontrini"
-        android:layout_gravity="center_horizontal" />
+        android:layout_marginBottom="30dp"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="@string/Budget"
+        android:id="@+id/budget"
+        android:textSize="@dimen/text_size"
+        android:layout_alignParentBottom="true"
+        android:layout_alignLeft="@+id/button_Foto"
+        android:layout_alignStart="@+id/button_Foto"
+        android:textColor="@color/colorText"
+        android:textStyle="bold"/>
 
-</LinearLayout>
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:layout_marginBottom="30dp"
+        android:text="valueB"
+        android:textSize="@dimen/text_size"
+        android:id="@+id/val_budget"
+        android:layout_alignTop="@+id/budget"
+        android:layout_alignRight="@+id/button_Scontrini"
+        android:textColor="@color/colorText"
+        android:textStyle="bold"/>
+
+
+
+</RelativeLayout>
