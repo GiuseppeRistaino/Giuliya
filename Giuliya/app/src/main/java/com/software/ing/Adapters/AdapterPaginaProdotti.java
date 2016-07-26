@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by Vrexas on 04/02/2016.
+ * Adapter pagina prodotti
  */
 public class AdapterPaginaProdotti extends ArrayAdapter<String> {
 

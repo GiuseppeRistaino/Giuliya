@@ -12,13 +12,26 @@ import com.software.ing.util.Ticket;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 
+/**
+ * La scermata di visualizzazione degli scontrini
+ *
+ */
+
 public class ListaTicketsActivity extends AppCompatActivity {
+    /**
+     * @param listView_scontrini la list view per visualizzare gli scontrini
+     * @param dbTicketManager il database contenente i dati estratti
+     * @param tickets la lista degli scontrini salvati
+     */
 
     ListView listViewScontrini;
-
     DBTicketManager dbTicketManager;
     ArrayList<Ticket> tickets = new ArrayList<>();
 
+    /**
+     * Inizializzazione dell'activity e creazione dell'interfaccia dal file activity_lista_tickets
+     * @param savedInstanceState
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

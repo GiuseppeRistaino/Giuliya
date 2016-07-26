@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by Giuseppe on 25/07/2016.
+ * Adapter pagina Scontrini.
  */
 public class AdapterPaginaScontrini extends ArrayAdapter<Ticket> {
 

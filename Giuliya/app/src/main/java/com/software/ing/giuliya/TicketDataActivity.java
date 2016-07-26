@@ -22,7 +22,13 @@ import java.util.HashMap;
 
 public class TicketDataActivity extends AppCompatActivity {
 
-    //HashMap che contiene l'ordinata delle parole che sono sulla stessa riga (Key) e un array che contiene le parole che sono sulla stessa riga (value)
+    /**
+     * @param wordsMapTest HashMap che contiene l'ordinata delle parole che sono sulla stessa riga (Key).
+     * e un array che contiene le parole che sono sulla stessa riga (value)
+     * @param textViewTotaleEuro totale euro
+     * @param buttonConferma pulsnte conferma di dati acquisiti
+     * @param dbTicketManager database
+     */
     HashMap<String, ArrayList<String>> wordsMapTest = new HashMap<String, ArrayList<String>>();
 
     TextView textViewTotaleEuro;
@@ -83,8 +89,9 @@ public class TicketDataActivity extends AppCompatActivity {
                         for (int i = 0; i < split.length; i++) {
                             if (split[i].contains(",") || split[i].contains(".")) {
                                 prezzoProdotto = split[i];
-                            } else
+                            } else {
                                 nomeProdotto += split[i];
+                            }
                         }
                         Prodotto prodotto = new Prodotto(nomeProdotto, prezzoProdotto, ticket.getId());
                         dbTicketManager.addProdotto(prodotto);

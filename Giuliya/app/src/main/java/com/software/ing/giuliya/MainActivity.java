@@ -17,7 +17,6 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -41,10 +40,22 @@ import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+/**
+ * L'activity principale dell'applicazione.
+ */
+
 public class MainActivity extends AppCompatActivity {
 
-    //EditText etResponse;
-    //TextView tvIsConnected;
+    /**
+     * @param buttonFoto il pulsante per oprire la fotocamera.
+     * @param buttonScontrini il pulsante che apre l'activity
+     *                        per visualizzare gli scontrini salvati.
+     * @param tvTotaleVal TextView contenente il valore totale della spesa
+     *                    il valore viene calcolato a partire dal database
+     * @param tvBudgetVal il valore specificato dall'utente nelle
+     *                    shared preferences
+     * @param dbTicketManager il database contenente tutti i dati salvati
+     */
     ImageButton buttonFoto;
     ImageButton buttonScontrini;
     TextView tvBudgetVal, tvTotaleVal;
@@ -62,6 +73,11 @@ public class MainActivity extends AppCompatActivity {
             .getExternalStorageDirectory().toString() + "/Giuliya/";
     private static final String TAG = "MainActivity.java";
 
+    /**
+     * Inizializzazione dell'applicazione.
+     * Vengono settati i valori di budget e del totale.
+     * @param savedInstanceState
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -98,18 +114,9 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        // Controllo per vedere se si è connessi ad internet oppure no
-        /*if(isConnected()){
-            tvIsConnected.setBackgroundColor(0xFF00CC00);
-            tvIsConnected.setText("You are conncted");
-        }
-        else{
-            tvIsConnected.setText("You are NOT conncted");
-        }*/
-
 
         //Inizializzazione di path utilizzati per l'immagazzinamento die dati
-        String[] paths = new String[] { DATA_PATH, DATA_PATH + "data/" };
+        String[] paths = new String[] {DATA_PATH, DATA_PATH + "data/"};
 
         //Verifica della creazione dei path
         for (String path : paths) {
@@ -129,27 +136,39 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    /**
+     * check se c'è la connessione.
+     * @return booleano true se c'è la connessione
+     */
     // check network connection
-    public boolean isConnected(){
+    public boolean isConnected() {
         ConnectivityManager connMgr = (ConnectivityManager) getSystemService(this.CONNECTIVITY_SERVICE);
         NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
-        if (networkInfo != null && networkInfo.isConnected())
+        if (networkInfo != null && networkInfo.isConnected()) {
             return true;
-        else
+        } else {
             return false;
+        }
     }
 
-    //Task per la comunicazione con il server di Microsoft per l'OCR
+    /**
+     * Task per la comunicazione con il server di Microsoft per l'OCR
+     */
     private class HttpAsyncTask extends AsyncTask<String, Void, String> {
         @Override
         protected String doInBackground(String... urls) {
             File file = new File(_path);
-            if (file.exists())
+            if (file.exists()) {
                 return GetOCR();
-            else
+            } else {
                 return "file don't exist";
+            }
         }
-        // onPostExecute displays the results of the AsyncTask.
+
+        /**
+         * onPostExecute displays the results of the AsyncTask.
+         * @param result
+         */
         @Override
         protected void onPostExecute(String result) {
             Toast.makeText(getBaseContext(), "Received!", Toast.LENGTH_LONG).show();
@@ -181,8 +200,7 @@ public class MainActivity extends AppCompatActivity {
                     intent.putExtra(OCR_RESULT_KEY, totaleEuro.getParola());
                     intent.putStringArrayListExtra(LISTA_PRODOTTI_KEY, prodotti);
                     startActivity(intent);
-                }
-                else {
+                } else {
                     AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this).create();
                     alertDialog.setTitle("Importo totale non trovato");
                     alertDialog.setMessage("Si prega di scattare nuovamente la foto, oppure inserire manualmente i dati dello scontrino.");
@@ -193,8 +211,7 @@ public class MainActivity extends AppCompatActivity {
                     });
                     alertDialog.show();
                 }
-            }
-            else {
+            } else {
                 AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this).create();
                 alertDialog.setTitle("Dati non trovati");
                 alertDialog.setMessage("Si prega di scattare nuovamente la foto, oppure inserire manualmente i dati dello scontrino.");
@@ -209,15 +226,17 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    //Metodo per la richiesta di OCR dal server
-    public String GetOCR()
-    {
+    /**
+     * Metodo per la richiesta di OCR dal server
+     * @return la stringa in formato JSON con le parole estratte
+     * (o codice d'errore)
+     */
+    public String GetOCR() {
 
         HttpClient httpclient = new DefaultHttpClient();
         String result = "";
 
-        try
-        {
+        try {
             Uri.Builder builder = new Uri.Builder();
             builder.scheme("https")
                     .authority("api.projectoxford.ai")
@@ -243,25 +262,34 @@ public class MainActivity extends AppCompatActivity {
             if (entity != null) {
                 result = EntityUtils.toString(entity);
             }
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             result = "Errore";
         }
         return result;
     }
 
+    /**
+     * Creazione del menu principale dell'app
+     * @param item
+     * @return l'item del menu (preferenze)
+     */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
 
-        Intent myIntent = new Intent(this, Preferenze.class );
+        Intent myIntent = new Intent(this, Preferenze.class);
         startActivity(myIntent);
         return true;
 
     }
+
+    /**
+     * menu principale
+     * @param menu
+     * @return
+     */
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -269,7 +297,9 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
-    //Metodo per l'attivazione della telecamera
+    /**
+     * Metodo per l'attivazione della telecamera
+     */
     protected void startCameraActivity() {
         File file = new File(_path);
         Uri outputFileUri = Uri.fromFile(file);
@@ -281,13 +311,18 @@ public class MainActivity extends AppCompatActivity {
         startActivityForResult(intent, 0);
     }
 
+    /**
+     * Gestisci che l'utente non ha scattato la foto
+     * @param requestCode
+     * @param resultCode
+     * @param data
+     */
     @Override
-    protected void onActivityResult (int requestCode, int resultCode, Intent data) {
-        if ( requestCode == 0 ) {
-            if ( resultCode == RESULT_CANCELED ) {
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == 0) {
+            if (resultCode == RESULT_CANCELED) {
                 //Gestisci che l'utente non ha scattato la foto
-            }
-            else {
+            } else {
                 //Parte il thread che manda la foto al server
                 new HttpAsyncTask().execute();
             }
@@ -296,6 +331,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
+    /**
+     * inserimento nel database dei ati estratti
+     * @param jsonFormat la stringa contenente le parole estratte
+     */
 
 
     private void riempiDB(String jsonFormat) {
@@ -324,6 +363,12 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * trova la parola più a destra della righa
+     * @param parole la righa di parole
+     * @return parola più a destra
+     */
+
     public Parola getParolaDestra(ArrayList<Parola> parole) {
         Parola pDestra = null;
         int x = 0;
@@ -336,6 +381,11 @@ public class MainActivity extends AppCompatActivity {
         return pDestra;
     }
 
+    /**
+     * recupera il prezzo del prodotto
+     * @param parole la righa dello scontrino
+     * @return
+     */
     public ArrayList<Parola> getEuroProdotti(ArrayList<Parola> parole) {
         ArrayList<Parola> prodotti = new ArrayList<>();
         for (Parola p : parole) {
@@ -345,10 +395,15 @@ public class MainActivity extends AppCompatActivity {
         }
         return prodotti;
     }
+
+    /**
+     * aggiorna la schermata
+     * @param savedInstanceState
+     */
     protected void onResume(Bundle savedInstanceState) {
         updateSHPref();
     }
-    protected void updateSHPref(){
+    protected void updateSHPref() {
         SharedPreferences settings = getSharedPreferences(getString(R.string.shared_pref_file_name), Context.MODE_PRIVATE);
 
 

@@ -6,7 +6,7 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 /**
- * Created by asus on 26/07/2016.
+ * I test della classe Ticket.
  */
 public class TicketTest {
     private Ticket ticket;

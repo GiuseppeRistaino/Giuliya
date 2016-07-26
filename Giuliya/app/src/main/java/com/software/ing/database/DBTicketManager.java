@@ -13,8 +13,7 @@ import com.software.ing.util.Ticket;
 
 import java.util.ArrayList;
 
-/**
- * Created by giuse on 23/07/2016.
+/**La classe per la creazione del database
  */
 public class DBTicketManager extends SQLiteOpenHelper {
 
@@ -79,6 +78,10 @@ public class DBTicketManager extends SQLiteOpenHelper {
         onCreate(db);
     }
 
+    /**
+     * aggiunta scontrino al db
+     * @param ticket scontrino
+     */
     public void addTicket(Ticket ticket) {
 
         ContentValues values = new ContentValues();
@@ -92,6 +95,10 @@ public class DBTicketManager extends SQLiteOpenHelper {
         db.close();
     }
 
+    /**
+     * aggiunta prodotto al db
+     * @param prodotto prodotto da aggiungere
+     */
     public void addProdotto(Prodotto prodotto) {
 
         ContentValues values = new ContentValues();
@@ -105,6 +112,10 @@ public class DBTicketManager extends SQLiteOpenHelper {
         db.close();
     }
 
+    /**
+     * aggiunta parola al db
+     * @param parola la parola da aggiungere
+     */
     public void addParola(Parola parola) {
 
         ContentValues values = new ContentValues();
@@ -120,7 +131,11 @@ public class DBTicketManager extends SQLiteOpenHelper {
         db.close();
     }
 
-
+    /**
+     * trova la parola nel db
+     * @param search parola da trovare
+     * @return parola trovata (null se non c'è)
+     */
     public Parola trovaParola(String search) {
         String query = "Select * FROM " + TABLE_WORDS + " WHERE " + COLUMN_PAROLA + " LIKE \"%" + search + "%\"";
 
@@ -145,6 +160,11 @@ public class DBTicketManager extends SQLiteOpenHelper {
         return p;
     }
 
+    /**
+     * trova le parole appartenenti alla stessa linea
+     * @param y l'ordinata della linea
+     * @return la lista della parole che compongono la linea
+     */
     public ArrayList<Parola> trovaParoleInLinea(int y) {
         int y1 = y-40;
         int y2 = y+40;
@@ -168,6 +188,11 @@ public class DBTicketManager extends SQLiteOpenHelper {
         return paroleInLinea;
     }
 
+    /**
+     * trova le parole nella stessa colonna
+     * @param x l'ascissa della colonna
+     * @return
+     */
     public ArrayList<Parola> trovaParoleInColonna(int x) {
         int x1 = x-40;
         int x2 = x+40;
@@ -192,6 +217,9 @@ public class DBTicketManager extends SQLiteOpenHelper {
         return paroleInLinea;
     }
 
+    /**
+     * cancella tutte le parole
+     */
     public void deleteAllWords()
     {
         String query = "Select * FROM " + TABLE_WORDS;
@@ -204,6 +232,10 @@ public class DBTicketManager extends SQLiteOpenHelper {
         db.close();
     }
 
+    /**
+     * trova l'ultimo scontrino inserito
+     * @return l'ultimo scontrino inserito
+     */
     public Ticket getUltimoTicketInserito()
     {
         String query = "SELECT * FROM " +TABLE_TICKET
@@ -222,6 +254,10 @@ public class DBTicketManager extends SQLiteOpenHelper {
         return t;
     }
 
+    /**
+     * get scontrini
+     * @return lista scontrini
+     */
     public ArrayList<Ticket> getScontrini() {
         String query = "Select * FROM " + TABLE_TICKET;
 
