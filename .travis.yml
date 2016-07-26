@@ -1,5 +1,5 @@
-before_install: cd Giuliya
 language: android
+script: cd Giuliya && gradle build
 sudo: false
 env:
   matrix:
