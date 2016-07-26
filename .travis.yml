@@ -1,19 +1,2 @@
-before_install: cd Giuliya
-language: android
-sudo: false
-env:
-  matrix:
-    - ANDROID_TARGET=android-23 ANDROID_ABI=armeabi-v7a
-  global:
-    # wait up to 10 minutes for adb to connect to emulator
-    - ADB_INSTALL_TIMEOUT=10
-
-android:
-  components:
-  - platform-tools
-  - tools
-  - build-tools-23.0.2
-  - android-23
-
-  # Emulator for the tests
-  - sys-img-armeabi-v7a-android-23
+language: java
+script: cd Giuliya && gradle build
