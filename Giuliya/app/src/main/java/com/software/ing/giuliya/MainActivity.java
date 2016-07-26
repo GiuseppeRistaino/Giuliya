@@ -18,6 +18,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -43,10 +44,10 @@ import java.util.HashMap;
 public class MainActivity extends AppCompatActivity {
 
     //EditText etResponse;
-    TextView tvIsConnected;
-    Button buttonFoto;
-    Button buttonScontrini;
-
+    //TextView tvIsConnected;
+    ImageButton buttonFoto;
+    ImageButton buttonScontrini;
+    TextView tvBudgetVal, tvTotaleVal;
     DBTicketManager dbTicketManager;
 
     public static final String OCR_RESULT_KEY = "OCR_RESULT";
@@ -70,9 +71,16 @@ public class MainActivity extends AppCompatActivity {
         // Inizializzazione EditText per testare la risposta del server
         //etResponse = (EditText) findViewById(R.id.etResponse);
         //Inizializzazione TextView per visualizzare il controllo della connessione
-        tvIsConnected = (TextView) findViewById(R.id.tvIsConnected);
+        //tvIsConnected = (TextView) findViewById(R.id.tvIsConnected);
         //Inizializzazione del bottone per la fotocamera
-        buttonFoto = (Button) findViewById(R.id.button_Foto);
+
+        tvBudgetVal = (TextView)   findViewById(R.id.val_budget);
+        String valBudget = settings.getString(getString(R.string.shared_pref_budget), "");
+        String valtotale = "valtotale"; //calcolare dal database
+        tvBudgetVal.setText(valBudget);
+        tvTotaleVal = (TextView)   findViewById(R.id.val_totale);
+        tvTotaleVal.setText(valtotale);
+        buttonFoto = (ImageButton) findViewById(R.id.button_Foto);
         //Apertura della fotocamera
         buttonFoto.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -81,7 +89,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        buttonScontrini = (Button) findViewById(R.id.button_Scontrini);
+        buttonScontrini = (ImageButton) findViewById(R.id.button_Scontrini);
         buttonScontrini.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -91,13 +99,13 @@ public class MainActivity extends AppCompatActivity {
         });
 
         // Controllo per vedere se si è connessi ad internet oppure no
-        if(isConnected()){
+        /*if(isConnected()){
             tvIsConnected.setBackgroundColor(0xFF00CC00);
             tvIsConnected.setText("You are conncted");
         }
         else{
             tvIsConnected.setText("You are NOT conncted");
-        }
+        }*/
 
 
         //Inizializzazione di path utilizzati per l'immagazzinamento die dati
@@ -336,6 +344,20 @@ public class MainActivity extends AppCompatActivity {
             }
         }
         return prodotti;
+    }
+    protected void onResume(Bundle savedInstanceState) {
+        updateSHPref();
+    }
+    protected void updateSHPref(){
+        SharedPreferences settings = getSharedPreferences(getString(R.string.shared_pref_file_name), Context.MODE_PRIVATE);
+
+
+        tvBudgetVal = (TextView)   findViewById(R.id.val_budget);
+        String valBudget = settings.getString(getString(R.string.shared_pref_budget), "");
+        String valtotale = "valtotale"; //calcolare dal database
+        tvBudgetVal.setText(valBudget);
+        tvTotaleVal = (TextView)   findViewById(R.id.val_totale);
+        tvTotaleVal.setText(valtotale);
     }
 
 }

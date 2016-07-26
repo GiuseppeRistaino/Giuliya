@@ -6,6 +6,13 @@
     android:layout_height="match_parent"
     tools:context="com.software.ing.giuliya.TicketDataActivity">
 
+    <ImageView
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:scaleType="fitXY"
+        android:id="@+id/imageView"
+        android:src="@drawable/backgroundtr"/>
+
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

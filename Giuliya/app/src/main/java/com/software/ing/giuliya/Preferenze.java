@@ -2,17 +2,19 @@ package com.software.ing.giuliya;
 
 /**
  * Created by asus on 12/07/2016.
- * Ultima modifica: 19/07/2016
+ * Ultima modifica: 25/07/2016
  */
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
+import android.widget.TextView;
 import android.widget.Toast;
 
 /** Preferenze è la classe che permette all'utente
@@ -98,7 +100,9 @@ public class Preferenze extends Activity {
                 editor.putInt("selected_radio", idx);
                 editor.putString("selected_value", visPeriod);
                 editor.commit();
-                this.finish();
+                Intent intent = new Intent(Preferenze.this, MainActivity.class);
+                startActivity(intent);
+                //this.finish();
             }
         }
     }
