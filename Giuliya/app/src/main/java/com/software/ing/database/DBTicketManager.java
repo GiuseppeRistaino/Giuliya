@@ -11,9 +11,15 @@ import com.software.ing.util.Parola;
 import com.software.ing.util.Prodotto;
 import com.software.ing.util.Ticket;
 
+import java.lang.reflect.Array;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 
-/**La classe per la creazione del database
+/**
+ * Created by giuse on 23/07/2016.
  */
 public class DBTicketManager extends SQLiteOpenHelper {
 
@@ -78,10 +84,6 @@ public class DBTicketManager extends SQLiteOpenHelper {
         onCreate(db);
     }
 
-    /**
-     * aggiunta scontrino al db
-     * @param ticket scontrino
-     */
     public void addTicket(Ticket ticket) {
 
         ContentValues values = new ContentValues();
@@ -95,10 +97,6 @@ public class DBTicketManager extends SQLiteOpenHelper {
         db.close();
     }
 
-    /**
-     * aggiunta prodotto al db
-     * @param prodotto prodotto da aggiungere
-     */
     public void addProdotto(Prodotto prodotto) {
 
         ContentValues values = new ContentValues();
@@ -112,10 +110,6 @@ public class DBTicketManager extends SQLiteOpenHelper {
         db.close();
     }
 
-    /**
-     * aggiunta parola al db
-     * @param parola la parola da aggiungere
-     */
     public void addParola(Parola parola) {
 
         ContentValues values = new ContentValues();
@@ -131,11 +125,7 @@ public class DBTicketManager extends SQLiteOpenHelper {
         db.close();
     }
 
-    /**
-     * trova la parola nel db
-     * @param search parola da trovare
-     * @return parola trovata (null se non c'è)
-     */
+
     public Parola trovaParola(String search) {
         String query = "Select * FROM " + TABLE_WORDS + " WHERE " + COLUMN_PAROLA + " LIKE \"%" + search + "%\"";
 
@@ -160,11 +150,6 @@ public class DBTicketManager extends SQLiteOpenHelper {
         return p;
     }
 
-    /**
-     * trova le parole appartenenti alla stessa linea
-     * @param y l'ordinata della linea
-     * @return la lista della parole che compongono la linea
-     */
     public ArrayList<Parola> trovaParoleInLinea(int y) {
         int y1 = y-40;
         int y2 = y+40;
@@ -188,11 +173,6 @@ public class DBTicketManager extends SQLiteOpenHelper {
         return paroleInLinea;
     }
 
-    /**
-     * trova le parole nella stessa colonna
-     * @param x l'ascissa della colonna
-     * @return
-     */
     public ArrayList<Parola> trovaParoleInColonna(int x) {
         int x1 = x-40;
         int x2 = x+40;
@@ -217,9 +197,6 @@ public class DBTicketManager extends SQLiteOpenHelper {
         return paroleInLinea;
     }
 
-    /**
-     * cancella tutte le parole
-     */
     public void deleteAllWords()
     {
         String query = "Select * FROM " + TABLE_WORDS;
@@ -232,10 +209,6 @@ public class DBTicketManager extends SQLiteOpenHelper {
         db.close();
     }
 
-    /**
-     * trova l'ultimo scontrino inserito
-     * @return l'ultimo scontrino inserito
-     */
     public Ticket getUltimoTicketInserito()
     {
         String query = "SELECT * FROM " +TABLE_TICKET
@@ -254,10 +227,6 @@ public class DBTicketManager extends SQLiteOpenHelper {
         return t;
     }
 
-    /**
-     * get scontrini
-     * @return lista scontrini
-     */
     public ArrayList<Ticket> getScontrini() {
         String query = "Select * FROM " + TABLE_TICKET;
 
@@ -276,6 +245,56 @@ public class DBTicketManager extends SQLiteOpenHelper {
         }
         db.close();
         return tickets;
+    }
+
+    public ArrayList<Ticket> getScontriniTraDueDate(Date precedente, Date successiva) {
+        String query = "Select * FROM " + TABLE_TICKET;
+
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        Cursor cursor = db.rawQuery(query, null);
+
+        ArrayList<Ticket> tickets = new ArrayList<>();
+        if (cursor.moveToFirst()) {
+            cursor.moveToFirst();
+            do {
+                Ticket p = new Ticket(cursor.getString(0), cursor.getString(1),
+                        cursor.getString(2), cursor.getString(3));
+                String data = p.getData();
+                DateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
+                Date dataScontrino = new Date();
+                try {
+                    dataScontrino = dateFormat.parse(data);
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+                if (precedente.compareTo(dataScontrino) >= 0 && dataScontrino.compareTo(successiva) <= 0) {
+                    tickets.add(p);
+                }
+            } while (cursor.moveToNext());
+        }
+        db.close();
+        return tickets;
+    }
+
+    public ArrayList<Prodotto> getProdotti(String idTicket) {
+        ArrayList<Prodotto> prodotti = new ArrayList<>();
+        String query = "Select * FROM " + TABLE_PRODOTTI +" WHERE " +COLUMN_TICKET_PRODOTTO +" = " +idTicket;
+
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        Cursor cursor = db.rawQuery(query, null);
+
+        if (cursor.moveToFirst()) {
+            cursor.moveToFirst();
+            do {
+                Prodotto p = new Prodotto(cursor.getString(0), cursor.getString(1),
+                        cursor.getString(2), cursor.getString(3));
+                prodotti.add(p);
+            } while (cursor.moveToNext());
+        }
+        db.close();
+        return prodotti;
     }
 
 }

@@ -1,10 +1,14 @@
 package com.software.ing.giuliya;
 
 import android.app.AlertDialog;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
@@ -17,12 +21,14 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.software.ing.database.DBTicketManager;
 import com.software.ing.util.Parola;
+import com.software.ing.util.Ticket;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -37,29 +43,27 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.lang.reflect.Array;
+import java.text.DateFormat;
+import java.text.DecimalFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
-
-/**
- * L'activity principale dell'applicazione.
- */
+import java.util.Random;
 
 public class MainActivity extends AppCompatActivity {
 
-    /**
-     * @param buttonFoto il pulsante per oprire la fotocamera.
-     * @param buttonScontrini il pulsante che apre l'activity
-     *                        per visualizzare gli scontrini salvati.
-     * @param tvTotaleVal TextView contenente il valore totale della spesa
-     *                    il valore viene calcolato a partire dal database
-     * @param tvBudgetVal il valore specificato dall'utente nelle
-     *                    shared preferences
-     * @param dbTicketManager il database contenente tutti i dati salvati
-     */
+    //EditText etResponse;
+    //TextView tvIsConnected;
     ImageButton buttonFoto;
     ImageButton buttonScontrini;
     TextView tvBudgetVal, tvTotaleVal;
     DBTicketManager dbTicketManager;
+    TextView textViewRemain;
+    ImageButton buttonAdd;
 
     public static final String OCR_RESULT_KEY = "OCR_RESULT";
     public static final String LISTA_PRODOTTI_KEY = "LISTA_PRODOTTI_KEY";
@@ -73,11 +77,22 @@ public class MainActivity extends AppCompatActivity {
             .getExternalStorageDirectory().toString() + "/Giuliya/";
     private static final String TAG = "MainActivity.java";
 
-    /**
-     * Inizializzazione dell'applicazione.
-     * Vengono settati i valori di budget e del totale.
-     * @param savedInstanceState
-     */
+    String[] insulti = {"Vai a vivere sotto un ponte",
+    "Hai le mani bucate?",
+    "Hai vinto la lotteria?",
+    "Lo stiamo perdendo! codice rosso!",
+    "Errore 404, budget non trovato",
+    "Houston! abbiamo un problema!",
+    "Prendi le forbici e taglia \n la carta di credito",
+    "Hai scoperto come creare \n i soldi dal nulla?",
+    "Ti piace perdere facile?",
+    "Hai trovato il petrolio?",
+    "Il tuo portafogli è come una cipolla.\n Quando lo apri ti viene da piangere",
+    "Quast'anno le vacanze con la zappa",
+    "La dieta, mai così facile",
+    "Datti all'ippica",
+    "La matematica non è il tuo mestiere"};
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -90,9 +105,81 @@ public class MainActivity extends AppCompatActivity {
         //tvIsConnected = (TextView) findViewById(R.id.tvIsConnected);
         //Inizializzazione del bottone per la fotocamera
 
+        String valtotale = "0"; //calcolare dal database
+
+        String arcoTemporale = settings.getString("selected_value", "");
+        String dataPartenza = settings.getString("selected_date", "");
+
+        Date dataOra = new Date();
+        Date dataPreferenze = new Date();
+
+        DateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
+        try {
+            dataPreferenze = dateFormat.parse(dataPartenza);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+
+        int giorniTrascorsi = (int) giorniTraDueDate(dataPreferenze, dataOra);
+        int giorniRestanti = 0;
+
+        Calendar calendar1 = Calendar.getInstance();
+        calendar1.setTime(dataOra);
+
+        ArrayList<Ticket> tickets = new ArrayList<>();
+
+        switch (arcoTemporale) {
+            case "settimanale":
+                giorniRestanti = giorniTrascorsi % 7;
+                calendar1.add(Calendar.DATE, -giorniRestanti);
+                break;
+            case "mensile":
+                giorniRestanti = giorniTrascorsi % 30;
+                calendar1.add(Calendar.DATE, -giorniRestanti);
+                break;
+            case "annuale":
+                giorniRestanti = giorniTrascorsi % 365;
+                calendar1.add(Calendar.DATE, -giorniRestanti);
+                break;
+        }
+        Log.d("GIORNI RESTANTI", Integer.toString(giorniRestanti));
+        tickets = dbTicketManager.getScontriniTraDueDate(calendar1.getTime(), dataOra);
+        Log.d("DATAORA", dataOra.toString());
+        Log.d("DATAPREFERENZA", dataPreferenze.toString());
+        double tot = 0;
+        if (!tickets.isEmpty()) {
+            for (Ticket t : tickets) {
+                if (t.getTotale().contains(",")) {
+                    t.setTotale(t.getTotale().replace(",","."));
+                }
+                tot += Double.parseDouble(t.getTotale());
+            }
+        }
+        Log.d("TOT", Double.toString(tot));
+
         tvBudgetVal = (TextView)   findViewById(R.id.val_budget);
+
         String valBudget = settings.getString(getString(R.string.shared_pref_budget), "");
-        String valtotale = "valtotale"; //calcolare dal database
+        if (valBudget.contains(",")) {
+            valBudget = (valBudget.replace(",","."));
+        }
+        if (valtotale.contains(",")) {
+            valtotale = (valtotale.replace(",","."));
+        }
+
+        //arrotondo ai due decimali
+        Double budget = 0.0;
+        if (!valBudget.isEmpty())
+            budget = Double.parseDouble(valBudget);
+        tot = round(tot, 2);
+        budget = round(budget, 2);
+
+        valtotale = Double.toString(tot);
+        valBudget = Double.toString(budget);
+
+
+        //tot =  Double.valueOf(decimalfo.format(tot));
+
         tvBudgetVal.setText(valBudget);
         tvTotaleVal = (TextView)   findViewById(R.id.val_totale);
         tvTotaleVal.setText(valtotale);
@@ -114,9 +201,38 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        textViewRemain = (TextView) findViewById(R.id.val_remain);
+        Double remain = budget - tot;
+        remain = round(remain, 2);
+        //remain = Double.valueOf(decimalfo.format(remain));
+
+        textViewRemain.setText(Double.toString(remain));
+        if (remain <= 0) {
+            textViewRemain.setTextColor(getResources().getColor(R.color.colorAccent));
+        }
+        // Controllo per vedere se si è connessi ad internet oppure no
+        /*if(isConnected()){
+            tvIsConnected.setBackgroundColor(0xFF00CC00);
+            tvIsConnected.setText("You are conncted");
+        }
+        else{
+            tvIsConnected.setText("You are NOT conncted");
+        }*/
+
+        buttonAdd = (ImageButton) findViewById(R.id.button_add);
+        buttonAdd.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this, TicketDataActivity.class);
+                intent.putExtra(OCR_RESULT_KEY, "0.0");
+                ArrayList<String> prodotti = new ArrayList<String>();
+                intent.putStringArrayListExtra(LISTA_PRODOTTI_KEY, prodotti);
+                startActivity(intent);
+            }
+        });
 
         //Inizializzazione di path utilizzati per l'immagazzinamento die dati
-        String[] paths = new String[] {DATA_PATH, DATA_PATH + "data/"};
+        String[] paths = new String[] { DATA_PATH, DATA_PATH + "data/" };
 
         //Verifica della creazione dei path
         for (String path : paths) {
@@ -134,54 +250,83 @@ public class MainActivity extends AppCompatActivity {
         //Percorso dove si trova l'immagine da utilizzare per l'OCR
         _path = DATA_PATH + "/ocr.jpg";
 
+        boolean insultato = settings.getBoolean("selected_insultato", false);
+
+        String soglia = settings.getString("soglia", "");
+        Double sogliaDouble;
+        if (soglia.isEmpty()) sogliaDouble = 0.0;
+        else sogliaDouble = Double.parseDouble(soglia);
+        if (sogliaDouble > 0 && tot > sogliaDouble && !insultato) {
+            Intent intent = new Intent();
+            intent.setClass(getApplicationContext(), MainActivity.class);
+            PendingIntent resultPendingIntent =
+                    PendingIntent.getActivity(
+                            this,
+                            0,
+                            intent,
+                            PendingIntent.FLAG_UPDATE_CURRENT
+                    );
+
+            Random random = new Random();
+            int insultoselezionato = random.nextInt(14);
+
+            //Build notification
+            Notification.Builder notif = null;
+            String str_notifica  = insulti[insultoselezionato];
+
+            notif = new Notification.Builder(getApplicationContext())
+                    .setSmallIcon(R.drawable.visualizza)
+                    .setContentTitle("Giuliya")
+                    .setContentText(str_notifica);
+
+            notif.setContentIntent(resultPendingIntent);
+
+            NotificationManager notmanager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+            //hide the notification after its selection
+            int mNotificationId = 001;
+            notmanager.notify(mNotificationId, notif.build());
+            insultato = true;
+            SharedPreferences.Editor editor = settings.edit();
+            editor.putBoolean("selected_insultato",insultato);
+            editor.commit();
+        }
+
     }
 
-    /**
-     * check se c'è la connessione.
-     * @return booleano true se c'è la connessione
-     */
     // check network connection
-    public boolean isConnected() {
+    public boolean isConnected(){
         ConnectivityManager connMgr = (ConnectivityManager) getSystemService(this.CONNECTIVITY_SERVICE);
         NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
-        if (networkInfo != null && networkInfo.isConnected()) {
+        if (networkInfo != null && networkInfo.isConnected())
             return true;
-        } else {
+        else
             return false;
-        }
     }
 
-    /**
-     * Task per la comunicazione con il server di Microsoft per l'OCR
-     */
+    //Task per la comunicazione con il server di Microsoft per l'OCR
     private class HttpAsyncTask extends AsyncTask<String, Void, String> {
         @Override
         protected String doInBackground(String... urls) {
             File file = new File(_path);
-            if (file.exists()) {
+            if (file.exists())
                 return GetOCR();
-            } else {
+            else
                 return "file don't exist";
-            }
         }
-
-        /**
-         * onPostExecute displays the results of the AsyncTask.
-         * @param result
-         */
+        // onPostExecute displays the results of the AsyncTask.
         @Override
         protected void onPostExecute(String result) {
             Toast.makeText(getBaseContext(), "Received!", Toast.LENGTH_LONG).show();
             dbTicketManager.deleteAllWords();
             riempiDB(result);
             Parola totale = dbTicketManager.trovaParola("TOTALE");
+            final ArrayList<String> prodotti = new ArrayList<>();
             if (totale != null) {
                 ArrayList<Parola> paroleInLinea = new ArrayList<>();
                 ArrayList<Parola> paroleInColonna = new ArrayList<>();
-                ArrayList<String> prodotti = new ArrayList<>();
                 paroleInLinea = dbTicketManager.trovaParoleInLinea(totale.getY());
-                Parola totaleEuro = getParolaDestra(paroleInLinea);
-                if (totaleEuro != null) {
+                final Parola totaleEuro = getParolaDestra(paroleInLinea);
+                if (totaleEuro != null && (totaleEuro.getParola().contains(",") || totaleEuro.getParola().contains("."))) {
                     paroleInColonna = dbTicketManager.trovaParoleInColonna(totaleEuro.getX());
                     paroleInColonna = getEuroProdotti(paroleInColonna);
                     String prodottoLinea = "";
@@ -200,7 +345,8 @@ public class MainActivity extends AppCompatActivity {
                     intent.putExtra(OCR_RESULT_KEY, totaleEuro.getParola());
                     intent.putStringArrayListExtra(LISTA_PRODOTTI_KEY, prodotti);
                     startActivity(intent);
-                } else {
+                }
+                else {
                     AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this).create();
                     alertDialog.setTitle("Importo totale non trovato");
                     alertDialog.setMessage("Si prega di scattare nuovamente la foto, oppure inserire manualmente i dati dello scontrino.");
@@ -209,9 +355,18 @@ public class MainActivity extends AppCompatActivity {
                             startCameraActivity();
                         }
                     });
+                    alertDialog.setButton2("DATI", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            Intent intent = new Intent(MainActivity.this, TicketDataActivity.class);
+                            intent.putExtra(OCR_RESULT_KEY, "0.0");
+                            intent.putStringArrayListExtra(LISTA_PRODOTTI_KEY, prodotti);
+                            startActivity(intent);
+                        }
+                    });
                     alertDialog.show();
                 }
-            } else {
+            }
+            else {
                 AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this).create();
                 alertDialog.setTitle("Dati non trovati");
                 alertDialog.setMessage("Si prega di scattare nuovamente la foto, oppure inserire manualmente i dati dello scontrino.");
@@ -220,23 +375,29 @@ public class MainActivity extends AppCompatActivity {
                         startCameraActivity();
                     }
                 });
+                alertDialog.setButton2("DATI", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        Intent intent = new Intent(MainActivity.this, TicketDataActivity.class);
+                        intent.putExtra(OCR_RESULT_KEY, "0.0");
+                        intent.putStringArrayListExtra(LISTA_PRODOTTI_KEY, prodotti);
+                        startActivity(intent);
+                    }
+                });
                 alertDialog.show();
             }
 
         }
     }
 
-    /**
-     * Metodo per la richiesta di OCR dal server
-     * @return la stringa in formato JSON con le parole estratte
-     * (o codice d'errore)
-     */
-    public String GetOCR() {
+    //Metodo per la richiesta di OCR dal server
+    public String GetOCR()
+    {
 
         HttpClient httpclient = new DefaultHttpClient();
         String result = "";
 
-        try {
+        try
+        {
             Uri.Builder builder = new Uri.Builder();
             builder.scheme("https")
                     .authority("api.projectoxford.ai")
@@ -262,34 +423,25 @@ public class MainActivity extends AppCompatActivity {
             if (entity != null) {
                 result = EntityUtils.toString(entity);
             }
-        } catch (Exception e) {
+        }
+        catch (Exception e)
+        {
             result = "Errore";
         }
         return result;
     }
 
-    /**
-     * Creazione del menu principale dell'app
-     * @param item
-     * @return l'item del menu (preferenze)
-     */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
 
-        Intent myIntent = new Intent(this, Preferenze.class);
+        Intent myIntent = new Intent(this, Preferenze.class );
         startActivity(myIntent);
         return true;
 
     }
-
-    /**
-     * menu principale
-     * @param menu
-     * @return
-     */
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -297,9 +449,7 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
-    /**
-     * Metodo per l'attivazione della telecamera
-     */
+    //Metodo per l'attivazione della telecamera
     protected void startCameraActivity() {
         File file = new File(_path);
         Uri outputFileUri = Uri.fromFile(file);
@@ -311,18 +461,13 @@ public class MainActivity extends AppCompatActivity {
         startActivityForResult(intent, 0);
     }
 
-    /**
-     * Gestisci che l'utente non ha scattato la foto
-     * @param requestCode
-     * @param resultCode
-     * @param data
-     */
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == 0) {
-            if (resultCode == RESULT_CANCELED) {
+    protected void onActivityResult (int requestCode, int resultCode, Intent data) {
+        if ( requestCode == 0 ) {
+            if ( resultCode == RESULT_CANCELED ) {
                 //Gestisci che l'utente non ha scattato la foto
-            } else {
+            }
+            else {
                 //Parte il thread che manda la foto al server
                 new HttpAsyncTask().execute();
             }
@@ -331,10 +476,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    /**
-     * inserimento nel database dei ati estratti
-     * @param jsonFormat la stringa contenente le parole estratte
-     */
 
 
     private void riempiDB(String jsonFormat) {
@@ -363,12 +504,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    /**
-     * trova la parola più a destra della righa
-     * @param parole la righa di parole
-     * @return parola più a destra
-     */
-
     public Parola getParolaDestra(ArrayList<Parola> parole) {
         Parola pDestra = null;
         int x = 0;
@@ -381,11 +516,6 @@ public class MainActivity extends AppCompatActivity {
         return pDestra;
     }
 
-    /**
-     * recupera il prezzo del prodotto
-     * @param parole la righa dello scontrino
-     * @return
-     */
     public ArrayList<Parola> getEuroProdotti(ArrayList<Parola> parole) {
         ArrayList<Parola> prodotti = new ArrayList<>();
         for (Parola p : parole) {
@@ -395,15 +525,10 @@ public class MainActivity extends AppCompatActivity {
         }
         return prodotti;
     }
-
-    /**
-     * aggiorna la schermata
-     * @param savedInstanceState
-     */
     protected void onResume(Bundle savedInstanceState) {
         updateSHPref();
     }
-    protected void updateSHPref() {
+    protected void updateSHPref(){
         SharedPreferences settings = getSharedPreferences(getString(R.string.shared_pref_file_name), Context.MODE_PRIVATE);
 
 
@@ -413,6 +538,24 @@ public class MainActivity extends AppCompatActivity {
         tvBudgetVal.setText(valBudget);
         tvTotaleVal = (TextView)   findViewById(R.id.val_totale);
         tvTotaleVal.setText(valtotale);
+    }
+
+    public long giorniTraDueDate(Date uno, Date due) {
+        Calendar c1 = Calendar.getInstance();
+        Calendar c2 = Calendar.getInstance();
+        c1.setTime(uno);
+        c2.setTime(due);
+        long giorni = (c2.getTime().getTime() - c1.getTime().getTime()) / (24 * 3600 * 1000);
+        return giorni;
+    }
+
+    public static double round(double value, int places) {
+        if (places < 0) throw new IllegalArgumentException();
+
+        long factor = (long) Math.pow(10, places);
+        value = value * factor;
+        long tmp = Math.round(value);
+        return (double) tmp / factor;
     }
 
 }

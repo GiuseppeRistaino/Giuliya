@@ -8,27 +8,28 @@ import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
 import com.software.ing.giuliya.R;
+import com.software.ing.util.Prodotto;
 import com.software.ing.util.Ticket;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by Giuseppe on 25/07/2016.
+ * Created by Giuseppe on 26/07/2016.
  */
-public class AdapterPaginaScontrini extends ArrayAdapter<Ticket> {
+public class AdapterPaginaProdottiTicket extends ArrayAdapter<Prodotto> {
 
     private int resource;
     private Context context;
-    private List<Ticket> values;
-    private ArrayList<Ticket> valuesOrigin;
+    private List<Prodotto> values;
+    private ArrayList<Prodotto> valuesOrigin;
 
-    public AdapterPaginaScontrini(Context context, int resource, List<Ticket> objects) {
+    public AdapterPaginaProdottiTicket(Context context, int resource, List<Prodotto> objects) {
         super(context, resource, objects);
         this.context = context;
         this.resource = resource;
         this.values = objects;
-        valuesOrigin = new ArrayList<Ticket>();
+        valuesOrigin = new ArrayList<Prodotto>();
         valuesOrigin.addAll(values);
     }
 
@@ -37,16 +38,16 @@ public class AdapterPaginaScontrini extends ArrayAdapter<Ticket> {
         LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View rowView = inflater.inflate(resource, parent, false);
 
-        Ticket ticket = getItem(position);
+        Prodotto prodotto = getItem(position);
 
-        TextView textViewId = (TextView) rowView.findViewById(R.id.textView_layout_elemento_lista_scontrini_id);
-        textViewId.setText(ticket.getId());
+        TextView textViewId = (TextView) rowView.findViewById(R.id.textView_layout_elemento_lista_prodotto_id);
+        textViewId.setText(prodotto.getId());
 
-        TextView textViewTotale = (TextView) rowView.findViewById(R.id.textView_layout_elemento_lista_scontrini_totale);
-        textViewTotale.setText(ticket.getTotale());
+        TextView textViewTotale = (TextView) rowView.findViewById(R.id.textView_layout_elemento_lista_prodotto_nome);
+        textViewTotale.setText(prodotto.getNome());
 
-        TextView textViewData = (TextView) rowView.findViewById(R.id.textView_layout_elemento_lista_scontrini_data);
-        textViewData.setText(ticket.getData());
+        TextView textViewData = (TextView) rowView.findViewById(R.id.textView_layout_elemento_lista_prodotto_prezzo);
+        textViewData.setText(prodotto.getPrezzo());
 
         //String s = values.get(position);
         //Fai qualcosa con la variabile s sempre se ti serve...

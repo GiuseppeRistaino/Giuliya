@@ -6,21 +6,16 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 /**
- * I test della classe Parola.
+ * Created by asus on 26/07/2016.
  */
 public class ParolaTest {
     private Parola parola;
 
-    /**
-     * test creazione parola
-     * @throws Exception
-     */
     @Before
     public void setUp() throws Exception {
         assertNull(parola);
         parola = new Parola();
     }
-
 
     @Test
     public void testCostruttore(){

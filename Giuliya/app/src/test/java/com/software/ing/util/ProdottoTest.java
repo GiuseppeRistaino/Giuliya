@@ -7,7 +7,7 @@ import static org.junit.Assert.*;
 import static org.junit.Assert.assertEquals;
 
 /**
- * I test della classe Prodotto.
+ * Created by asus on 26/07/2016.
  */
 public class ProdottoTest {
 

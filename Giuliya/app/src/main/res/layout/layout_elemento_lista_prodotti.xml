@@ -7,7 +7,6 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:background="@drawable/backgroundtr"
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:text=""
         android:id="@+id/textView_layout_elemento_lista_prodotti_nome" />

@@ -1,7 +1,12 @@
 package com.software.ing.giuliya;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ListView;
 
 import com.software.ing.Adapters.AdapterPaginaProdotti;
@@ -12,26 +17,15 @@ import com.software.ing.util.Ticket;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 
-/**
- * La scermata di visualizzazione degli scontrini
- *
- */
-
 public class ListaTicketsActivity extends AppCompatActivity {
-    /**
-     * @param listView_scontrini la list view per visualizzare gli scontrini
-     * @param dbTicketManager il database contenente i dati estratti
-     * @param tickets la lista degli scontrini salvati
-     */
 
     ListView listViewScontrini;
+
     DBTicketManager dbTicketManager;
     ArrayList<Ticket> tickets = new ArrayList<>();
 
-    /**
-     * Inizializzazione dell'activity e creazione dell'interfaccia dal file activity_lista_tickets
-     * @param savedInstanceState
-     */
+    public static final String ID_TICKET_KEY = "ID_TICKET";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -43,9 +37,30 @@ public class ListaTicketsActivity extends AppCompatActivity {
 
         tickets = dbTicketManager.getScontrini();
 
-        final AdapterPaginaScontrini adapterPaginaScontrini = new AdapterPaginaScontrini(this, R.layout.layout_elemento_lista_scontrini, tickets);
-
-        listViewScontrini.setAdapter(adapterPaginaScontrini);
-
+        if (!tickets.isEmpty() && tickets != null) {
+            final AdapterPaginaScontrini adapterPaginaScontrini = new AdapterPaginaScontrini(this, R.layout.layout_elemento_lista_scontrini, tickets);
+            listViewScontrini.setAdapter(adapterPaginaScontrini);
+            listViewScontrini.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                    Intent intent = new Intent(ListaTicketsActivity.this, ListaProdottiActivity.class);
+                    Ticket ticket = (Ticket) parent.getItemAtPosition(position);
+                    intent.putExtra(ID_TICKET_KEY, ticket.getId());
+                    startActivity(intent);
+                }
+            });
+        }
+        else {
+            AlertDialog alertDialog = new AlertDialog.Builder(ListaTicketsActivity.this).create();
+            alertDialog.setTitle("Scontrini non trovati");
+            alertDialog.setMessage("Non sono stati ancora registrati scontrini nell'applicazione");
+            alertDialog.setButton("OK", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int which) {
+                    Intent intent = new Intent(ListaTicketsActivity.this, MainActivity.class);
+                    startActivity(intent);
+                }
+            });
+            alertDialog.show();
+        }
     }
 }

@@ -28,18 +28,57 @@
 
     <ImageButton
 
-        android:layout_width="130dp"
-        android:layout_height="130dp"
-        android:layout_marginRight="30dp"
+    android:layout_width="130dp"
+    android:layout_height="130dp"
+    android:layout_marginRight="30dp"
+    android:scaleType="fitXY"
+    android:background="@null"
+    android:cropToPadding="false"
+    android:id="@+id/button_Scontrini"
+    android:src="@drawable/visualizza"
+    android:onClick="insert"
+    android:layout_alignTop="@+id/button_Foto"
+    android:layout_alignParentRight="true"
+    android:layout_alignParentEnd="true" />
+
+    <ImageButton
+
+        android:layout_width="80dp"
+        android:layout_height="80dp"
         android:scaleType="fitXY"
         android:background="@null"
         android:cropToPadding="false"
-        android:id="@+id/button_Scontrini"
-        android:src="@drawable/visualizza"
+        android:id="@+id/button_add"
+        android:src="@drawable/add"
         android:onClick="insert"
-        android:layout_alignTop="@+id/button_Foto"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true" />
+        android:layout_marginTop="175dp"
+        android:layout_alignRight="@+id/button_Scontrini" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="120dp"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="Remain: "
+        android:id="@+id/remain"
+        android:textSize="@dimen/text_size"
+        android:layout_alignParentBottom="true"
+        android:layout_alignLeft="@+id/button_Foto"
+        android:layout_alignStart="@+id/button_Foto"
+        android:textColor="@color/colorText"
+        android:textStyle="bold"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="value"
+        android:textSize="@dimen/text_size"
+        android:id="@+id/val_remain"
+        android:layout_alignTop="@+id/remain"
+        android:layout_alignRight="@+id/button_Scontrini"
+        android:textColor="@color/colorText"
+        android:textStyle="bold"/>
 
     <TextView
         android:layout_width="wrap_content"

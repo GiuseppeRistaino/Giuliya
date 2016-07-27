@@ -17,6 +17,11 @@ import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+
 /** Preferenze è la classe che permette all'utente
  * di inserire i valori di:
  * budget, soglia della notifica, il periodo  di valutazione.*/
@@ -65,6 +70,8 @@ public class Preferenze extends Activity {
         SharedPreferences.Editor editor = settings.edit();
         Context context = getApplicationContext();
 
+        boolean insultato = false;
+
         double budget, soglia;
         String budgetparse = etb.getText().toString();
         String sogliaparse = ets.getText().toString();
@@ -87,7 +94,7 @@ public class Preferenze extends Activity {
             } else {
                 soglia = Double.parseDouble(sogliaparse);
             }
-            if (soglia >= budget && !budgetparse.equals("")) {
+            if (soglia > budget && !budgetparse.equals("")) {
                 CharSequence text = "il valore della soglia di notifica deve essere minore del budget";
                 int duration = Toast.LENGTH_SHORT;
                 Toast toast = Toast.makeText(context, text, duration);
@@ -97,8 +104,14 @@ public class Preferenze extends Activity {
                 RadioButton radioButton = (RadioButton) radioGroup.findViewById(radioButtonID);
                 int idx = radioGroup.indexOfChild(radioButton);
                 String visPeriod = (String) radioButton.getText();
+                Date date = new Date();
+                DateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
+                String dataString = dateFormat.format(date);
+
                 editor.putInt("selected_radio", idx);
                 editor.putString("selected_value", visPeriod);
+                editor.putString("selected_date", dataString);
+                editor.putBoolean("selected_insultato",insultato);
                 editor.commit();
                 Intent intent = new Intent(Preferenze.this, MainActivity.class);
                 startActivity(intent);
